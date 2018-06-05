@@ -1,38 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
-<LinearLayout xmlns:tools = "http://schemas.android.com/tools"
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    >
-    <!--Layout for the View button-->
+    android:orientation="vertical">
+
+    <!-- Layout for the view Button -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@android:color/holo_blue_light"
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_blue_dark"
         android:weightSum="1">
-
         <Button
             android:id="@+id/button_view"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
             android:layout_gravity="right"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-
-            android:layout_marginTop="8dp"
             android:onClick="changeView"
-
-            android:text="Toggle view" />
-
-
-        <EditText
+            android:text="View"></Button>
+        <!--<EditText
             android:id="@+id/editText_SearchAddress"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
@@ -41,25 +28,18 @@
             android:layout_marginTop="2dp"
             android:ems="10"
             android:inputType="textPostalAddress"
-            android:text=""
-            app:layout_constraintEnd_toEndOf="@+id/barrier2"
-            app:layout_constraintHorizontal_bias="0.802"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text="" />
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/button_Search"
             android:layout_width="61dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onSearch"
-            android:text="Search"
-            app:layout_constraintEnd_toEndOf="@+id/barrier2"
-            app:layout_constraintHorizontal_bias="0.802"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text="Search" />-->
 
     </LinearLayout>
+
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -69,5 +49,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MapsActivity" />
-
 </LinearLayout>
+

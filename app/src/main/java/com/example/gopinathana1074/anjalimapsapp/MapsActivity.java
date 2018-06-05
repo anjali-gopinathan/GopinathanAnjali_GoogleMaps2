@@ -7,6 +7,7 @@ import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -34,6 +35,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locationManager;
     private Location myLocation;
     private static final double LATLNG_RECTANGLE_DIST = (5.0/60.0);
+    private boolean gotMyLocationOneTime;
+    private boolean isGPSEnabled=false, isNetworkEnabled=false;
+
+    private static final long MIN_TIME_BTWN_UPDATES = 1000*5;     //update every 5 seconds
+    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0.0f;
+
+    private LocationListener locationListenerGPS;
+
+    private static final int MY_LOC_ZOOM_FACTOR = 17;           //The higher the value, the more zoomed in
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +98,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         locationSearch = (EditText) findViewById(R.id.editText_SearchAddress);
+
+        gotMyLocationOneTime = false;
     }
     public void onSearch(View view){
         String location = locationSearch.getText().toString();
@@ -110,13 +122,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if( (myLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) ) != null ){
                     userLoc = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
                     Log.d("AnjaliMapsApp", "MapsActivity: onSearch: using NETWORK_PROVIDER, current location = (Latitude = " + myLocation.getLatitude()+ ", Longitude = " + myLocation.getLongitude() + ")");
-                    Toast.makeText(this, "UserLoc = (Latitude = " + myLocation.getLatitude()+ ", Longitude = " + myLocation.getLongitude() + ")", Toast.LENGTH_SHORT);
+                    Toast.makeText(this, "UserLoc = (Latitude = " + myLocation.getLatitude()+ ", Longitude = " + myLocation.getLongitude() + ")", Toast.LENGTH_SHORT).show();
 
                 }
                 else if((myLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)) != null ){
                     userLoc = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
                     Log.d("AnjaliMapsApp", "MapsActivity: onSearch: using GPS_PROVIDER, current location = (Latitude = " + myLocation.getLatitude()+ ", Longitude = " + myLocation.getLongitude() + ")");
-                    Toast.makeText(this, "UserLoc = (Latitude = " + myLocation.getLatitude()+ ", Longitude = " + myLocation.getLongitude() + ")", Toast.LENGTH_SHORT);
+                    Toast.makeText(this, "UserLoc = (Latitude = " + myLocation.getLatitude()+ ", Longitude = " + myLocation.getLongitude() + ")", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     Log.d("AnjaliMapsApp", "MapsActivity: onSearch: myLocation is NULL");
@@ -125,7 +137,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         catch(SecurityException | IllegalArgumentException e){
             Log.d("AnjaliMapsApp", "MapsActivity: onSearch: Exception on getLastKnown Location");
-            Toast.makeText(this, "Illegal exception; couldn't find your location!", Toast.LENGTH_SHORT);
+            Toast.makeText(this, "Illegal exception; couldn't find your location!", Toast.LENGTH_SHORT).show();
         }
 
         if(!location.matches("")){
@@ -145,11 +157,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             catch(IOException e){
                 e.printStackTrace();
                 Log.d("AnjaliMapsApp", "MapsActivity: onSearch: Exception on filling addressList with results from geocoder");
-                Toast.makeText(this, "Illegal exception on filling addressList with results from geocoder!", Toast.LENGTH_SHORT);
+                Toast.makeText(this, "Illegal exception on filling addressList with results from geocoder!", Toast.LENGTH_SHORT).show();
             }
             if(!addressList.isEmpty()){
                 Log.d("AnjaliMapsApp", "MapsActivity: onSearch: Address list size = " + addressList.size());
-                Toast.makeText(this, ""+addressList.size() + " results found", Toast.LENGTH_SHORT);
+                Toast.makeText(this, ""+addressList.size() + " results found", Toast.LENGTH_SHORT).show();
 
                 for(int i=0; i<addressList.size(); i++){
                     Address address = addressList.get(i);
@@ -165,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             else{
                 Log.d("AnjaliMapsApp", "MapsActivity: onSearch: NO RESULTS FOUND");
-                Toast.makeText(this, "No results found", Toast.LENGTH_SHORT);
+                Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -173,4 +185,94 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
     }
+    public void changeView(){
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+    }
+    public void getLocation(){
+        try {
+            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+            //get GPS status
+            //isProviderEnabled returns true if user has enabled gps on phone
+            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+            if(isGPSEnabled){
+                Log.d("AnjaliMapsApp", "MapsActivity: getLocation: GPS is enabled.");
+            }
+
+            //get network status
+            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            if(isNetworkEnabled){
+                Log.d("AnjaliMapsApp", "MapsActivity: getLocation: Network is enabled.");
+            }
+
+            if(!isGPSEnabled && !isNetworkEnabled){
+                Log.d("AnjaliMapsApp", "MapsActivity: getLocation: No provider is enabled.");
+            }
+            else{
+                if(isNetworkEnabled){
+                    if(         ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                            &&  ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {        //check permissions
+                        Log.d("AnjaliMapsApp", "MapsActivity: getLocation: Network is enabled, Coarse and Fine location permission granted.");
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BTWN_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                }
+                if(isGPSEnabled){
+                    //launch locationListenerGPS
+                    //DO THIS CODE
+                }
+            }
+        }
+        catch(Exception e){
+            Log.d("AnjaliMapsApp", "MapsActivity: getLocation: caught exception");
+            e.printStackTrace();
+        }
+    }
+    //locationlistener is an anonymous inner class
+    //set up for callbacks from the requestLocationUpdates
+    LocationListener locationListenerNetwork = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            dropAMarker(LocationManager.NETWORK_PROVIDER);
+
+            //Check if doing one time via onMapReady -> if so, remove updates to both GPS and network
+            if(!gotMyLocationOneTime){
+                locationManager.removeUpdates(this);
+
+                locationManager.removeUpdates(locationListenerGPS);
+            }
+            else {  //Tracking location now, so we relaunch request for network
+                Log.d("AnjaliMapsApp", "MapsActivity: locationListenerNetwork: onLocationChanged: Tracking location now, so relaunch request for network");
+
+                if(         ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        &&  ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {        //check permissions
+                    return;
+                }
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BTWN_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+
+
+            }
+        }
+
+        private void dropAMarker(String networkProvider) {
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.d("AnjaliMapsApp", "MapsActivity: locationListenerNetwork: onStatusChanged: Status changed");
+            Toast.makeText(MapsActivity.this, "Status changed", Toast.LENGTH_SHORT).show();
+        }
+        //don't have to worry about onProviderEnabled or disabled because GPS won't be disabled/enabled
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
 }

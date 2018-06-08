@@ -21,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -37,6 +38,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final double LATLNG_RECTANGLE_DIST = (5.0/60.0);
     private boolean gotMyLocationOneTime;
     private boolean isGPSEnabled=false, isNetworkEnabled=false;
+    private boolean trackingMyLocation = true;
+//    private String provider;
+
+    private LatLng userLoc = null;
 
     private static final long MIN_TIME_BTWN_UPDATES = 1000*5;     //update every 5 seconds
     private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 0.0f;
@@ -94,13 +99,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true);
         }
 
-        //Add button to toggle satellite/regular map view
-
-
         locationSearch = (EditText) findViewById(R.id.editText_SearchAddress);
 
         gotMyLocationOneTime = false;
     }
+
     public void onSearch(View view){
         String location = locationSearch.getText().toString();
         List<Address> addressList = null;
@@ -112,8 +115,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.d("AnjaliMapsApp", "MapsActivity: onSearch: location = " + location);
         Log.d("AnjaliMapsApp", "MapsActivity: onSearch: provider = " + provider);
-
-        LatLng userLoc = null;
+        //myLocation = locationManager.getLastKnownLocation(provider);
+//        LatLng userLoc = null;
         try {
             //Check last known location
             //Need to specifically list the provider (network or gps)
@@ -185,8 +188,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
     }
-    public void changeView(){
-        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+    public void changeView(View view){
+        if(mMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL){
+            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        }
+        else{
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        }
+
     }
     public void getLocation(){
         try {
@@ -219,10 +228,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BTWN_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
                 }
                 if(isGPSEnabled){
-                    //launch locationListenerGPS
-                    //DO THIS CODE
+                    //if(         ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS))
                 }
             }
+
+            trackingMyLocation = (isNetworkEnabled || isGPSEnabled);
         }
         catch(Exception e){
             Log.d("AnjaliMapsApp", "MapsActivity: getLocation: caught exception");
@@ -251,14 +261,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BTWN_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
 
+                trackingMyLocation=true;
 
             }
         }
+        public void trackMyLocation(View view){
+            if(trackingMyLocation){
+                locationManager.removeUpdates(locationListenerNetwork);
+                locationManager.removeUpdates(locationListenerGPS);
 
-        private void dropAMarker(String networkProvider) {
-
+                //Toast.makeText(this, "Tracking is now off", Toast.LENGTH_SHORT).show();
+                trackingMyLocation = false;
+            }
+            else {
+                getLocation();
+                //Toast.makeText(this, "Tracking is now on", Toast.LENGTH_SHORT).show();
+                trackingMyLocation = true;
+            }
         }
+        private void dropAMarker(String locationProvider) {
+            if(         ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    &&  ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {        //if checkSelfPermission fails
+                return;
+            }
 
+            myLocation = locationManager.getLastKnownLocation(locationProvider);
+
+            userLoc = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+            if(locationProvider.contains("GPS")) {
+                mMap.addMarker(new MarkerOptions().position(userLoc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+            }
+            else if(locationProvider.contains("Network")){
+                mMap.addMarker(new MarkerOptions().position(userLoc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+            }
+
+            mMap.moveCamera( CameraUpdateFactory.newLatLng(userLoc) );
+        }
+        public void clear (View view){
+            mMap.clear();
+        }
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
             Log.d("AnjaliMapsApp", "MapsActivity: locationListenerNetwork: onStatusChanged: Status changed");

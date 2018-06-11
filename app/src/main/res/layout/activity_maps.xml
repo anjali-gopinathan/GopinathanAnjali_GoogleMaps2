@@ -6,11 +6,22 @@
     android:orientation="vertical">
 
     <!-- Layout for the view Button -->
+
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:background="@android:color/holo_blue_dark"
         android:weightSum="1">
+
+        <Button
+            android:id="@+id/button_Track"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="trackMyLocation"
+            android:text="Trk" />
+
         <Button
             android:id="@+id/button_view"
             style="?android:attr/buttonStyleSmall"
@@ -21,33 +32,43 @@
             android:text="View"></Button>
 
         <Button
-            android:id="@+id/button_Track"
-            android:layout_width="15dp"
+            android:id="@+id/button_clear"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Trk" />
+            android:onClick="clear"
+            android:text="CLR" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:background="@android:color/holo_blue_dark"
+        android:weightSum="1">
+
 
         <EditText
             android:id="@+id/editText_SearchAddress"
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="2dp"
             android:ems="10"
-            android:inputType="textPostalAddress"
-            android:text="" />
 
+            android:text="" />
+        <!--android:inputType="textPostalAddress"-->
         <Button
             android:id="@+id/button_Search"
-            android:layout_width="61dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onSearch"
-            android:text="Search" />
+            android:text="Srch" />
 
     </LinearLayout>
-
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"

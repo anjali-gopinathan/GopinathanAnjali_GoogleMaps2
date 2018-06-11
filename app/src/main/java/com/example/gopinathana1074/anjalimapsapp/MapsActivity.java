@@ -36,10 +36,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locationManager;
     private Location myLocation;
     private static final double LATLNG_RECTANGLE_DIST = (5.0/60.0);
-    private boolean gotMyLocationOneTime;
+    private boolean gotMyLocationOnce;
     private boolean isGPSEnabled=false, isNetworkEnabled=false;
     private boolean trackingMyLocation = true;
-//    private String provider;
+    private String theProvider;
 
     private LatLng userLoc = null;
 
@@ -101,7 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         locationSearch = (EditText) findViewById(R.id.editText_SearchAddress);
 
-        gotMyLocationOneTime = false;
+        gotMyLocationOnce = false;
     }
 
     public void onSearch(View view){
@@ -183,18 +183,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
 
             }
-
+            theProvider=provider;
 
 
         }
     }
     public void changeView(View view){
-        if(mMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL){
-            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-        }
-        else{
-            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        }
+        if(mMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL) mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        else mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
     }
     public void getLocation(){
@@ -244,10 +240,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationListener locationListenerNetwork = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            dropAMarker(LocationManager.NETWORK_PROVIDER);
+            dropAMarker(theProvider);
 
             //Check if doing one time via onMapReady -> if so, remove updates to both GPS and network
-            if(!gotMyLocationOneTime){
+            if(!gotMyLocationOnce){
                 locationManager.removeUpdates(this);
 
                 locationManager.removeUpdates(locationListenerGPS);
@@ -270,12 +266,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 locationManager.removeUpdates(locationListenerNetwork);
                 locationManager.removeUpdates(locationListenerGPS);
 
-                //Toast.makeText(this, "Tracking is now off", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapsActivity.this, "Tracking is now off", Toast.LENGTH_SHORT).show();
                 trackingMyLocation = false;
             }
             else {
                 getLocation();
-                //Toast.makeText(this, "Tracking is now on", Toast.LENGTH_SHORT).show();
+               Toast.makeText(MapsActivity.this, "Tracking is now on", Toast.LENGTH_SHORT).show();
                 trackingMyLocation = true;
             }
         }

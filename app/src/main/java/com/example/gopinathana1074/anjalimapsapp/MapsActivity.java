@@ -89,24 +89,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(SanDiego).title("Born here"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(SanDiego));
 
-        if( ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("AnjaliMapsApp", "Failed FINE permission check");
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-        }
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            Log.d("AnjaliMapsApp", "Failed COARSE permission check");
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
-        }
-
-        if( (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            )||(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ) ){
-            Log.d("AnjaliMapsApp", "Either FINE or COARSE Passed permission check");
-            mMap.setMyLocationEnabled(true);
-        }
+//        if( ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            Log.d("AnjaliMapsApp", "Failed FINE permission check");
+//            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+//        }
+//        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+//            Log.d("AnjaliMapsApp", "Failed COARSE permission check");
+//            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+//        }
+//
+//        if( (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+//            )||(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ) ){
+//            Log.d("AnjaliMapsApp", "Either FINE or COARSE Passed permission check");
+//            mMap.setMyLocationEnabled(true);
+//        }
 
         locationSearch = (EditText) findViewById(R.id.editText_SearchAddress);
 
         gotMyLocationOnce = false;
+        getLocation();
     }
 
     public void onSearch(View view){
@@ -302,7 +303,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationListener locationListenerGPS = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            Log.d("MyMapsApp", "LocationListnerGps:location changed");
+            Log.d("AnjaliMapsApp", "LocationListnerGps:location changed");
             dropAMarker(LocationManager.GPS_PROVIDER);
 
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -317,17 +318,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         public void onStatusChanged(String provider, int i, Bundle extras) {
-            Log.d("MyMaps", "locationListenerGPS: onStatusChanged utilized and working");
+            Log.d("AnjaliMapsApp", "locationListenerGPS: onStatusChanged utilized and working");
             Toast.makeText(getApplicationContext(), "LocationListenerGPS onStatusChanged", Toast.LENGTH_SHORT).show();
 
 
             switch (i) {
                 case LocationProvider.AVAILABLE:
-                    Log.d("MyMaps", "LocationProvider is available");
+                    Log.d("AnjaliMapsApp", "LocationProvider is available");
                     Toast.makeText(getApplicationContext(), "LocationProvider is available", Toast.LENGTH_SHORT).show();
                     break;
                 case LocationProvider.OUT_OF_SERVICE:
-                    Log.d("MyMaps", "LocationProvider out of service");
+                    Log.d("AnjaliMapsApp", "LocationProvider out of service");
                     if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                             && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         return;
@@ -340,7 +341,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                    Log.d("MyMaps", "LocationProvider is temporarily unavailable");
+                    Log.d("AnjaliMapsApp", "LocationProvider is temporarily unavailable");
                     if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                             && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         return;
@@ -352,7 +353,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                 default:
-                    Log.d("MyMaps", "LocationProvider default");
+                    Log.d("AnjaliMapsApp", "LocationProvider default");
                     if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED &&
                             ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
@@ -413,16 +414,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
     public void trackMyLocation(View view){
-
-
-
-        if(trackingMyLocation){
+        if(trackingMyLocation) {
             getLocation();
             trackingMyLocation = true;
-        }else{
+        }
+        else {
             locationManager.removeUpdates(locationListenerNetwork);
             locationManager.removeUpdates(locationListenerGPS);
-            trackingMyLocation= true;
+            trackingMyLocation= false;
         }
 
     }
